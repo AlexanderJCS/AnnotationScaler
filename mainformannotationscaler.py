@@ -30,20 +30,21 @@ class MainFormAnnotationscaler(OrsAbstractWindow):
     @staticmethod
     def process(initial_scale: tuple[float, float, float], final_scale: tuple[float, float, float]):
         multiplier = np.array(final_scale) / np.array(initial_scale)
-
-        # 4x4 transformation matrix
-        transformation = ORSModel.ors.Matrix4x4()
-        transformation.setupAsIdentity()
-        transformation.setValue(0, 0, multiplier[0])
-        transformation.setValue(1, 1, multiplier[1])
-        transformation.setValue(2, 2, multiplier[2])
-
-        print(transformation)
+        print(multiplier)
 
         selected_annotations = WorkingContext.getEntitiesOfClassAsObjects(None, OrsSelectedObjects, ORSModel.ors.Annotation)
 
         for annotation in selected_annotations:
-            annotation.applyTransformation(transformation, 0)
+            control_points = annotation.getControlPoints(0)
+
+            for i in range(len(control_points), 3):
+                point = np.array([control_points.at(i), control_points.at(i + 1), control_points.at(i + 2)])
+                point *= multiplier
+                vec_point = ORSModel.ors.Vector3()
+                vec_point.setXYZ(*point)
+
+                annotation.addControlPoint(vec_point, 0, None)
+                annotation.removeControlPoint(0, 0)
 
     @staticmethod
     def are_annotations_selected() -> bool:
