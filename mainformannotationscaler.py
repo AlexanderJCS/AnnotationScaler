@@ -35,15 +35,27 @@ class MainFormAnnotationscaler(OrsAbstractWindow):
         selected_annotations = WorkingContext.getEntitiesOfClassAsObjects(None, OrsSelectedObjects, ORSModel.ors.Annotation)
 
         for annotation in selected_annotations:
-            control_points = annotation.getControlPoints(0)
+            print("annotation")
 
-            for i in range(len(control_points), 3):
-                point = np.array([control_points.at(i), control_points.at(i + 1), control_points.at(i + 2)])
+            control_points = annotation.getControlPoints(0).getAsNDArray()
+
+            print(control_points)
+
+            for i in range(0, len(control_points), 3):
+                point = np.array([control_points[i], control_points[i + 1], control_points[i + 2]])
+                print(f"Before: {point}")
                 point *= multiplier
+                print(f"After: {point}")
                 vec_point = ORSModel.ors.Vector3()
                 vec_point.setXYZ(*point)
 
                 annotation.addControlPoint(vec_point, 0, None)
+                appended_ctrl_point_idx = annotation.getControlPointCount(0) - 1
+                annotation.setControlPointCaptionAtIndex(
+                    appended_ctrl_point_idx,
+                    0,
+                    annotation.getControlPointCaptionAtIndex(0, 0),
+                )
                 annotation.removeControlPoint(0, 0)
 
     @staticmethod
